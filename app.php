@@ -140,11 +140,12 @@ $displayName = $me['name'] ?? $me['username'] ?? '';
   }
 
   /* ---- FRONT overlay fields (positioned to match sample-with-details.png) ---- */
+  /* 35mm x 45mm passport-photo ratio (7:9), sized to the card's front artwork */
   .photo-box{
     position:absolute;
-    left:24%;
+    left:26%;
     top:29%;
-    width:49.5%;
+    width:45.6%;
     height:37%;
     background:#eee;
     display:flex;
@@ -169,7 +170,7 @@ $displayName = $me['name'] ?? $me['username'] ?? '';
   .id-name{
     font-size:3.8mm;
     font-weight:800;
-    color:var(--navy);
+    color:#0d1b4c;
     line-height:1.15;
     white-space:nowrap;
     overflow:hidden;
@@ -178,7 +179,7 @@ $displayName = $me['name'] ?? $me['username'] ?? '';
   .id-rc{
     margin-top:1.6mm;
     font-size:3.3mm;
-    color:var(--navy);
+    color:#0d1b4c;
     font-weight:700;
     line-height:1.15;
     text-transform:uppercase;
@@ -186,10 +187,9 @@ $displayName = $me['name'] ?? $me['username'] ?? '';
   .id-designation{
     margin-top:1mm;
     font-size:3.3mm;
-    color:var(--navy);
+    color:#0d1b4c;
     font-weight:700;
     line-height:1.15;
-    text-transform:uppercase;
   }
 
   /* ---------- PRINT ---------- */
@@ -272,7 +272,7 @@ $displayName = $me['name'] ?? $me['username'] ?? '';
       <label>Photo</label>
       <div class="upload">
         <input type="file" id="photoInput" accept="image/*">
-        <div class="hint">Click to upload Photo</div>
+        <div class="hint">Click to upload Photo — passport size (35&times;45mm)</div>
       </div>
     </div>
 
