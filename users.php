@@ -56,6 +56,7 @@ try {
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>Users — Office Card Print</title>
+<script src="assets/theme.js"></script>
 <link rel="stylesheet" href="assets/theme.css">
 <style>
   .wrap{max-width:820px;margin:0 auto;padding:32px 24px 60px;}
@@ -80,7 +81,7 @@ try {
     color:var(--gray);
     font-weight:600;
   }
-  tbody tr:hover{background:#fafbfd;}
+  tbody tr:hover{background:var(--row-hover);}
   tr:last-child td{border-bottom:none;}
   .role-form{display:flex;align-items:center;gap:8px;}
   .role-form select{font-size:12.5px;padding:6px 8px;}
@@ -106,6 +107,7 @@ try {
     <a href="index.php" class="topbar-link">&larr; Back to app</a>
     <div class="topbar-divider"></div>
     <a href="logout.php" class="topbar-link">Log out</a>
+    <button id="themeToggle" class="theme-toggle" type="button" onclick="toggleTheme()" aria-label="Toggle dark mode"></button>
   </div>
 </div>
 

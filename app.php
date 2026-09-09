@@ -11,6 +11,7 @@ $displayName = $me['name'] ?? $me['username'] ?? '';
 <head>
 <meta charset="UTF-8">
 <title>Office Card Print</title>
+<script src="assets/theme.js"></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
 <link rel="stylesheet" href="assets/theme.css">
@@ -42,7 +43,7 @@ $displayName = $me['name'] ?? $me['username'] ?? '';
     display:block;
     font-size:12px;
     font-weight:600;
-    color:#333;
+    color:var(--text);
     margin-bottom:6px;
   }
   .field input[type=text]{width:100%;}
@@ -52,7 +53,7 @@ $displayName = $me['name'] ?? $me['username'] ?? '';
     padding:14px;
     text-align:center;
     cursor:pointer;
-    background:#fafbfc;
+    background:var(--upload-bg);
     transition:border-color .15s;
     position:relative;
   }
@@ -73,7 +74,7 @@ $displayName = $me['name'] ?? $me['username'] ?? '';
   .opts{display:flex;flex-direction:column;gap:8px;margin-bottom:18px;}
   .opts label{
     display:flex;align-items:center;gap:8px;
-    font-size:13px;color:#333;cursor:pointer;
+    font-size:13px;color:var(--text);cursor:pointer;
   }
   .btnbar{display:flex;gap:10px;margin-top:6px;}
   .btnbar button{flex:1;}
@@ -286,7 +287,7 @@ $displayName = $me['name'] ?? $me['username'] ?? '';
   }
   .saved-item:hover{
     box-shadow:var(--shadow-md);
-    border-color:#c9cedb;
+    border-color:var(--navy-2);
   }
   .saved-thumb{
     width:100%;
@@ -294,12 +295,12 @@ $displayName = $me['name'] ?? $me['username'] ?? '';
     object-fit:cover;
     border-radius:6px;
     border:1px solid var(--border);
-    background:#f4f5f7;
+    background:var(--gray-soft);
   }
   .saved-name{
     font-size:13px;
     font-weight:700;
-    color:#12142b;
+    color:var(--text);
     overflow:hidden;
     text-overflow:ellipsis;
     white-space:nowrap;
@@ -313,7 +314,7 @@ $displayName = $me['name'] ?? $me['username'] ?? '';
   }
   .saved-date{
     font-size:11px;
-    color:#9aa0ab;
+    color:var(--muted);
   }
   .saved-actions{
     display:flex;
@@ -342,6 +343,7 @@ $displayName = $me['name'] ?? $me['username'] ?? '';
       <div class="topbar-divider"></div>
     <?php endif; ?>
     <a href="logout.php" class="topbar-link">Log out</a>
+    <button id="themeToggle" class="theme-toggle" type="button" onclick="toggleTheme()" aria-label="Toggle dark mode"></button>
   </div>
 </div>
 

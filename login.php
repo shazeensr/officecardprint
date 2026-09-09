@@ -77,6 +77,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>Sign In — Office Card Print</title>
+<script src="assets/theme.js"></script>
 <link rel="stylesheet" href="assets/theme.css">
 <style>
   body{
@@ -125,7 +126,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     display:block;
     font-size:12px;
     font-weight:600;
-    color:#333;
+    color:var(--text);
     margin-bottom:6px;
   }
   .field input{width:100%;}
@@ -140,6 +141,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 </style>
 </head>
 <body>
+  <button id="themeToggle" class="theme-toggle" type="button" onclick="toggleTheme()" aria-label="Toggle dark mode" style="position:fixed;top:16px;right:16px;"></button>
   <form class="login-card surface" method="post" action="login.php" autocomplete="off">
     <div class="brand">
       <div class="brand-mark">OC</div>

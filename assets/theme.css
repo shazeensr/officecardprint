@@ -23,6 +23,31 @@
   --shadow-sm:0 1px 2px rgba(13,27,76,.06);
   --shadow-md:0 8px 24px rgba(13,27,76,.08);
   --font:-apple-system,BlinkMacSystemFont,"Segoe UI",Helvetica,Arial,sans-serif;
+  --upload-bg:#fafbfc;
+  --row-hover:#fafbfd;
+}
+
+:root[data-theme="dark"]{
+  --navy:#5b7fe0;
+  --navy-2:#7b9aec;
+  --navy-soft:#1c2444;
+  --red:#ff7a7e;
+  --red-soft:#3a2023;
+  --red-border:#5c2c2f;
+  --blue:#6ba3e0;
+  --blue-soft:#152a42;
+  --gray:#9aa0ab;
+  --gray-soft:#242938;
+  --gray-soft-2:#2f3546;
+  --paper:#11131a;
+  --panel:#1a1d29;
+  --border:#2c3140;
+  --text:#e7e9ee;
+  --muted:#767c88;
+  --shadow-sm:0 1px 2px rgba(0,0,0,.3);
+  --shadow-md:0 8px 24px rgba(0,0,0,.45);
+  --upload-bg:#20242f;
+  --row-hover:#20242f;
 }
 
 *{box-sizing:border-box;}
@@ -133,7 +158,7 @@ select:focus{
   border-color:var(--navy-2);
 }
 input:disabled{
-  background:#f2f3f5;
+  background:var(--gray-soft);
   color:var(--muted);
   cursor:not-allowed;
 }
@@ -154,3 +179,21 @@ input:disabled{
   padding:9px 10px;
   border-radius:var(--radius-sm);
 }
+
+/* ---------- Theme toggle ---------- */
+.theme-toggle{
+  flex:none;
+  display:flex;
+  align-items:center;
+  justify-content:center;
+  width:30px;
+  height:30px;
+  padding:0;
+  border:1px solid var(--border);
+  border-radius:var(--radius-sm);
+  background:var(--gray-soft);
+  color:var(--text);
+  font-size:14px;
+  line-height:1;
+}
+.theme-toggle:hover:not(:disabled){background:var(--gray-soft-2);}
