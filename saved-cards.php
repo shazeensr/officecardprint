@@ -63,6 +63,7 @@ $displayName = $me['name'] ?? $me['username'] ?? '';
     overflow:hidden;
     text-overflow:ellipsis;
     white-space:nowrap;
+    text-transform:uppercase;
   }
   .saved-meta{
     font-size:12px;
@@ -70,6 +71,7 @@ $displayName = $me['name'] ?? $me['username'] ?? '';
     overflow:hidden;
     text-overflow:ellipsis;
     white-space:nowrap;
+    text-transform:uppercase;
   }
   .saved-date{font-size:11px;color:var(--muted);}
   .saved-actions{display:flex;gap:6px;margin-top:4px;}

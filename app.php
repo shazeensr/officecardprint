@@ -113,13 +113,13 @@ $displayName = $me['name'] ?? $me['username'] ?? '';
      The wrapper reserves the scaled footprint; the card inside is scaled
      from its top-left corner so it doesn't spill into neighbouring cards. */
   .card-wrap{
-    width:calc(46mm * 3.2);
-    height:calc(65mm * 3.2);
+    width:calc(53.98mm * 3.2);
+    height:calc(85.6mm * 3.2);
     position:relative;
   }
   .card{
-    width:44mm;
-    height:66mm;
+    width:53.98mm;
+    height:85.6mm;
     background:#fff;
     position:absolute;
     top:0;
@@ -173,6 +173,7 @@ $displayName = $me['name'] ?? $me['username'] ?? '';
     line-height:1.15;
     white-space:nowrap;
     overflow:hidden;
+    text-transform:uppercase;
   }
   .id-rc{
     margin-top:1.6mm;
@@ -180,6 +181,7 @@ $displayName = $me['name'] ?? $me['username'] ?? '';
     color:var(--navy);
     font-weight:700;
     line-height:1.15;
+    text-transform:uppercase;
   }
   .id-designation{
     margin-top:1mm;
@@ -187,6 +189,7 @@ $displayName = $me['name'] ?? $me['username'] ?? '';
     color:var(--navy);
     font-weight:700;
     line-height:1.15;
+    text-transform:uppercase;
   }
 
   /* ---------- PRINT ---------- */
