@@ -7,6 +7,7 @@
 // so new LDAP logins are read-only until explicitly promoted below.
 return [
     'grs' => 'admin',
+    '48440' => 'admin',
 
     // 'jdoe' => 'editor',
     // 'asmith' => 'viewer',
