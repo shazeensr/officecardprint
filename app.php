@@ -113,13 +113,13 @@ $displayName = $me['name'] ?? $me['username'] ?? '';
      The wrapper reserves the scaled footprint; the card inside is scaled
      from its top-left corner so it doesn't spill into neighbouring cards. */
   .card-wrap{
-    width:calc(53.98mm * 3.2);
-    height:calc(85.6mm * 3.2);
+    width:calc(46mm * 3.2);
+    height:calc(65mm * 3.2);
     position:relative;
   }
   .card{
-    width:53.98mm;
-    height:85.6mm;
+    width:44mm;
+    height:66mm;
     background:#fff;
     position:absolute;
     top:0;
@@ -230,98 +230,7 @@ $displayName = $me['name'] ?? $me['username'] ?? '';
       height:85.6mm;
     }
     #printArea .card:last-child{page-break-after:auto;}
-    .saved-section{display:none;}
   }
-
-  /* ---------- SAVED CARDS ---------- */
-  .saved-section{
-    max-width:1100px;
-    margin:0 auto;
-    padding:8px 32px 60px;
-  }
-  .saved-header{
-    display:flex;
-    align-items:center;
-    gap:10px;
-    margin-bottom:16px;
-  }
-  .saved-header h2{
-    font-size:15px;
-    color:var(--navy);
-    margin:0;
-  }
-  .saved-count{
-    font-size:12px;
-    color:var(--gray);
-    white-space:nowrap;
-  }
-  .saved-search{
-    margin-left:auto;
-    width:260px;
-    max-width:50%;
-  }
-  .panel .saved-search{
-    margin-left:0;
-    width:100%;
-    max-width:100%;
-  }
-  .saved-empty{
-    font-size:13px;
-    color:var(--gray);
-    padding:20px 0;
-  }
-  .saved-list{
-    display:grid;
-    grid-template-columns:repeat(auto-fill,minmax(200px,1fr));
-    gap:16px;
-  }
-  .saved-item{
-    background:var(--panel);
-    border:1px solid var(--border);
-    border-radius:10px;
-    padding:10px;
-    display:flex;
-    flex-direction:column;
-    gap:8px;
-    transition:box-shadow .15s ease, border-color .15s ease;
-  }
-  .saved-item:hover{
-    box-shadow:var(--shadow-md);
-    border-color:var(--navy-2);
-  }
-  .saved-thumb{
-    width:100%;
-    aspect-ratio:53.98/85.6;
-    object-fit:cover;
-    border-radius:6px;
-    border:1px solid var(--border);
-    background:var(--gray-soft);
-  }
-  .saved-name{
-    font-size:13px;
-    font-weight:700;
-    color:var(--text);
-    overflow:hidden;
-    text-overflow:ellipsis;
-    white-space:nowrap;
-  }
-  .saved-meta{
-    font-size:12px;
-    color:var(--gray);
-    overflow:hidden;
-    text-overflow:ellipsis;
-    white-space:nowrap;
-  }
-  .saved-date{
-    font-size:11px;
-    color:var(--muted);
-  }
-  .saved-actions{
-    display:flex;
-    gap:6px;
-    margin-top:4px;
-  }
-  .saved-actions .btn-small{flex:1;}
 </style>
 </head>
 <body>
@@ -338,6 +247,8 @@ $displayName = $me['name'] ?? $me['username'] ?? '';
       <span class="role-badge <?= htmlspecialchars($role, ENT_QUOTES) ?>"><?= htmlspecialchars($role, ENT_QUOTES) ?></span>
     </div>
     <div class="topbar-divider"></div>
+    <a href="saved-cards.php" class="topbar-link">Saved cards</a>
+    <div class="topbar-divider"></div>
     <?php if ($role === 'admin'): ?>
       <a href="users.php" class="topbar-link">Manage users</a>
       <div class="topbar-divider"></div>
@@ -352,13 +263,6 @@ $displayName = $me['name'] ?? $me['username'] ?? '';
   <div class="panel">
     <h2>Card details</h2>
     <p class="sub">Enter the front-side details, preview the card, then print at CR-80 card size. The back side is fixed artwork and always prints as-is.</p>
-
-    <div class="field">
-      <label>Search saved cards</label>
-      <input type="text" id="savedSearch" class="saved-search" placeholder="Search by name or RC number…" oninput="applySavedFilter()">
-    </div>
-
-    <hr class="sep">
 
     <div class="field">
       <label>Photo</label>
@@ -403,8 +307,9 @@ $displayName = $me['name'] ?? $me['username'] ?? '';
       Printing uses a fixed CR-80 page size (53.98&nbsp;mm × 85.6&nbsp;mm). In the print dialog,
       set paper size to match your card feeder and scale to <b>100% / Actual size</b> (not "Fit to page").
       "Save as PDF" downloads the same card as a CR-80-sized PDF file instead of opening the print dialog.
-      Clicking "Print card" automatically saves this card to Saved Cards below (with a snapshot) so you
-      can reprint it later — or use "Save to records" to save it without printing yet.
+      Clicking "Print card" automatically saves this card to your saved cards (with a snapshot) so you
+      can reprint it later — or use "Save to records" to save it without printing yet. See
+      <a href="saved-cards.php">Saved cards</a> in the top bar to browse, reload, or reprint past cards.
     </p>
   </div>
 
@@ -421,15 +326,6 @@ $displayName = $me['name'] ?? $me['username'] ?? '';
       </div>
     </div>
   </div>
-</div>
-
-<!-- ===================== SAVED CARDS ===================== -->
-<div class="saved-section">
-  <div class="saved-header">
-    <h2>Saved Cards</h2>
-    <span class="saved-count" id="savedCount"></span>
-  </div>
-  <div class="saved-list" id="savedList"></div>
 </div>
 
 <!-- Hidden container used only for printing (populated at print time) -->
@@ -638,32 +534,12 @@ async function dbAdd(record){
   });
 }
 
-async function dbGetAll(){
-  const db = await openCardDB();
-  return new Promise((resolve,reject)=>{
-    const tx = db.transaction(DB_STORE,'readonly');
-    const req = tx.objectStore(DB_STORE).getAll();
-    req.onsuccess = ()=>resolve(req.result);
-    req.onerror = ()=>reject(req.error);
-  });
-}
-
 async function dbGet(id){
   const db = await openCardDB();
   return new Promise((resolve,reject)=>{
     const tx = db.transaction(DB_STORE,'readonly');
     const req = tx.objectStore(DB_STORE).get(id);
     req.onsuccess = ()=>resolve(req.result);
-    req.onerror = ()=>reject(req.error);
-  });
-}
-
-async function dbDelete(id){
-  const db = await openCardDB();
-  return new Promise((resolve,reject)=>{
-    const tx = db.transaction(DB_STORE,'readwrite');
-    const req = tx.objectStore(DB_STORE).delete(id);
-    req.onsuccess = ()=>resolve();
     req.onerror = ()=>reject(req.error);
   });
 }
@@ -679,10 +555,6 @@ async function renderFrontSnapshot(values){
   const dataUrl = canvas.toDataURL('image/jpeg', 0.85);
   pdfArea.innerHTML = '';
   return dataUrl;
-}
-
-function escapeHtml(s){
-  return (s || '').replace(/[&<>"']/g, c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
 }
 
 /* Shared save logic used both by the explicit "Save to records" button
@@ -701,7 +573,6 @@ async function persistRecord(values){
     frontSnapshot: snapshot,
     createdAt: Date.now()
   });
-  await refreshSavedList();
   return true;
 }
 
@@ -726,64 +597,6 @@ async function saveRecord(){
     btn.disabled = false;
     btn.textContent = originalLabel;
   }
-}
-
-let allRecords = [];
-
-async function refreshSavedList(){
-  const list = document.getElementById('savedList');
-  try{
-    allRecords = await dbGetAll();
-  } catch(err){
-    console.error(err);
-    allRecords = [];
-    list.innerHTML = '<div class="saved-empty">Could not load saved cards.</div>';
-    return;
-  }
-  allRecords.sort((a,b)=> b.createdAt - a.createdAt);
-  applySavedFilter();
-}
-
-function applySavedFilter(){
-  const list = document.getElementById('savedList');
-  const countEl = document.getElementById('savedCount');
-  const query = document.getElementById('savedSearch').value.trim().toLowerCase();
-
-  const records = query
-    ? allRecords.filter(r=>
-        (r.fullName || '').toLowerCase().includes(query) ||
-        (r.rcNumber || '').toLowerCase().includes(query))
-    : allRecords;
-
-  countEl.textContent = allRecords.length
-    ? (query ? records.length + ' of ' + allRecords.length : allRecords.length) + ' saved'
-    : '';
-
-  if(allRecords.length === 0){
-    list.innerHTML = '<div class="saved-empty">No saved cards yet — fill in the form and click "Save to records".</div>';
-    return;
-  }
-  if(records.length === 0){
-    list.innerHTML = '<div class="saved-empty">No saved cards match "' + escapeHtml(document.getElementById('savedSearch').value) + '".</div>';
-    return;
-  }
-
-  list.innerHTML = records.map(r=>{
-    const meta = [r.rcNumber, r.designation].filter(Boolean).join(' · ');
-    return `
-      <div class="saved-item">
-        <img class="saved-thumb" src="${r.frontSnapshot}" alt="">
-        <div class="saved-name">${escapeHtml(r.fullName || '(no name)')}</div>
-        <div class="saved-meta">${escapeHtml(meta)}</div>
-        <div class="saved-date">${new Date(r.createdAt).toLocaleString()}</div>
-        <div class="saved-actions">
-          <button class="btn-secondary btn-small" onclick="loadRecord(${r.id})">Load</button>
-          <button class="btn-secondary btn-small" onclick="reprintRecord(${r.id})">Reprint</button>
-          ${window.APP_ROLE === 'viewer' ? '' : `<button class="btn-secondary btn-small btn-danger" onclick="deleteRecord(${r.id})">Delete</button>`}
-        </div>
-      </div>
-    `;
-  }).join('');
 }
 
 async function loadRecord(id){
@@ -822,12 +635,6 @@ async function reprintRecord(id){
   window.print();
 }
 
-async function deleteRecord(id){
-  if(!confirm('Delete this saved card? This cannot be undone.')) return;
-  await dbDelete(id);
-  await refreshSavedList();
-}
-
 function applyRolePermissions(){
   if(window.APP_ROLE !== 'viewer') return;
 
@@ -845,7 +652,20 @@ function applyRolePermissions(){
 
 applyRolePermissions();
 render();
-refreshSavedList();
+
+(function(){
+  const params = new URLSearchParams(window.location.search);
+  const printId = params.get('print');
+  const loadId = params.get('load');
+  if(printId){
+    reprintRecord(Number(printId));
+  } else if(loadId){
+    loadRecord(Number(loadId));
+  }
+  if(printId || loadId){
+    history.replaceState(null, '', 'index.php');
+  }
+})();
 </script>
 
 </body>
