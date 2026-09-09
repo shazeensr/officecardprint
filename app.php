@@ -216,6 +216,7 @@ $displayName = $me['name'] ?? $me['username'] ?? '';
   }
   @media print{
     @page{ size:53.98mm 85.6mm; margin:0; }
+    .topbar{display:none;}
     .app{display:none;}
     #printArea{
       position:absolute;
