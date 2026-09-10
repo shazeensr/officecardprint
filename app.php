@@ -66,6 +66,12 @@ $displayName = $me['name'] ?? $me['username'] ?? '';
   }
   .upload .hint{font-size:12px;color:var(--gray);}
   .row2{display:grid;grid-template-columns:1fr 1fr;gap:10px;}
+  .rc-lookup{display:flex;gap:6px;}
+  .rc-lookup input{flex:1;min-width:0;}
+  .rc-lookup .btn-small{flex:none;}
+  .hr-lookup-status{font-size:11px;color:var(--gray);margin-top:5px;min-height:14px;}
+  .hr-lookup-status.error{color:var(--red);}
+  .hr-lookup-status.ok{color:var(--green);}
   hr.sep{
     border:none;
     border-top:1px solid var(--border);
@@ -287,7 +293,11 @@ $displayName = $me['name'] ?? $me['username'] ?? '';
     <div class="row2">
       <div class="field">
         <label>RC number</label>
-        <input type="text" id="rcNumber" placeholder="e.g. 48440" value="">
+        <div class="rc-lookup">
+          <input type="text" id="rcNumber" placeholder="e.g. 48440" value="">
+          <button type="button" class="btn-secondary btn-small" id="hrLookupBtn" onclick="lookupHr()">Search</button>
+        </div>
+        <div class="hr-lookup-status" id="hrLookupStatus"></div>
       </div>
       <div class="field">
         <label>Designation</label>
@@ -377,6 +387,66 @@ const fieldIds = ['fullName','rcNumber','designation'];
 fieldIds.forEach(id=>{
   document.getElementById(id).addEventListener('input', render);
 });
+
+document.getElementById('rcNumber').addEventListener('keydown', e=>{
+  if(e.key === 'Enter'){
+    e.preventDefault();
+    lookupHr();
+  }
+});
+
+/* ===================== HR DIRECTORY LOOKUP =====================
+   Fills Full Name + Designation from the internal HR directory by RC
+   number. Server-side (hr-search.php) does the actual lookup so the
+   directory's credentials never reach the browser. */
+async function lookupHr(){
+  const rcInput = document.getElementById('rcNumber');
+  const statusEl = document.getElementById('hrLookupStatus');
+  const btn = document.getElementById('hrLookupBtn');
+  const rc = rcInput.value.trim();
+
+  statusEl.className = 'hr-lookup-status';
+
+  if(!rc){
+    statusEl.textContent = 'Enter an RC number first.';
+    statusEl.className = 'hr-lookup-status error';
+    return;
+  }
+
+  const originalLabel = btn.textContent;
+  btn.disabled = true;
+  btn.textContent = 'Searching…';
+  statusEl.textContent = '';
+
+  try{
+    const res = await fetch('hr-search.php?rc=' + encodeURIComponent(rc));
+    const data = await res.json();
+
+    if(!res.ok || data.error){
+      statusEl.textContent = data.error || 'Lookup failed.';
+      statusEl.className = 'hr-lookup-status error';
+      return;
+    }
+
+    if(!data.found){
+      statusEl.textContent = 'No match found for RC ' + rc + '.';
+      statusEl.className = 'hr-lookup-status error';
+      return;
+    }
+
+    document.getElementById('fullName').value = data.name;
+    document.getElementById('designation').value = data.designation;
+    render();
+    statusEl.textContent = 'Found: ' + data.name;
+    statusEl.className = 'hr-lookup-status ok';
+  } catch(err){
+    statusEl.textContent = 'Could not reach the HR directory.';
+    statusEl.className = 'hr-lookup-status error';
+  } finally {
+    btn.disabled = false;
+    btn.textContent = originalLabel;
+  }
+}
 
 function getValues(){
   const v = {};
@@ -653,7 +723,7 @@ async function reprintRecord(id){
 function applyRolePermissions(){
   if(window.APP_ROLE !== 'viewer') return;
 
-  ['photoInput','fullName','rcNumber','designation'].forEach(id=>{
+  ['photoInput','fullName','rcNumber','designation','hrLookupBtn'].forEach(id=>{
     const el = document.getElementById(id);
     if(el) el.disabled = true;
   });

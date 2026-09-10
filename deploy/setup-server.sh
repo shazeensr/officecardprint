@@ -34,7 +34,7 @@ fi
 echo "==> Installing packages"
 apt-get update
 apt-get install -y apache2 mysql-server git curl \
-  php php-mysql php-ldap php-mbstring php-xml php-cli libapache2-mod-php
+  php php-mysql php-ldap php-mbstring php-xml php-cli php-curl libapache2-mod-php
 
 if ! php -r 'exit(version_compare(PHP_VERSION, "8.0.0", "<") ? 1 : 0);'; then
   echo "!! PHP $(php -r 'echo PHP_VERSION;') found, but this app needs PHP 8.0+."
