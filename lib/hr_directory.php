@@ -103,7 +103,7 @@ function parse_hr_directory_result(string $html, string $rc): ?array
  */
 function strip_honorific(string $name): string
 {
-    return preg_replace('/^(mr|mrs|ms|miss|mx|dr)\.?\s+/i', '', trim($name));
+    return preg_replace('/^(mr|mrs|ms|miss|mx|dr)\.*\s+/i', '', trim($name));
 }
 
 /**
