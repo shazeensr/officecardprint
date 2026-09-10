@@ -286,23 +286,22 @@ $displayName = $me['name'] ?? $me['username'] ?? '';
     </div>
 
     <div class="field">
+      <label>RC number</label>
+      <div class="rc-lookup">
+        <input type="text" id="rcNumber" placeholder="e.g. 48440" value="">
+        <button type="button" class="btn-secondary btn-small" id="hrLookupBtn" onclick="lookupHr()">Search</button>
+      </div>
+      <div class="hr-lookup-status" id="hrLookupStatus"></div>
+    </div>
+
+    <div class="field">
       <label>Full Name</label>
       <input type="text" id="fullName" placeholder="e.g. Ahmed Shazeen" value="">
     </div>
 
-    <div class="row2">
-      <div class="field">
-        <label>RC number</label>
-        <div class="rc-lookup">
-          <input type="text" id="rcNumber" placeholder="e.g. 48440" value="">
-          <button type="button" class="btn-secondary btn-small" id="hrLookupBtn" onclick="lookupHr()">Search</button>
-        </div>
-        <div class="hr-lookup-status" id="hrLookupStatus"></div>
-      </div>
-      <div class="field">
-        <label>Designation</label>
-        <input type="text" id="designation" placeholder="e.g. Immigration Officer" value="">
-      </div>
+    <div class="field">
+      <label>Designation</label>
+      <input type="text" id="designation" placeholder="e.g. Immigration Officer" value="">
     </div>
 
     <hr class="sep">
