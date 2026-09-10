@@ -149,7 +149,7 @@ $displayName = $me['name'] ?? $me['username'] ?? '';
   /* 35mm x 45mm passport-photo ratio (7:9), sized to the card's front artwork */
   .photo-box{
     position:absolute;
-    left:26%;
+    left:27%;
     top:29%;
     width:45.6%;
     height:37%;
@@ -159,7 +159,7 @@ $displayName = $me['name'] ?? $me['username'] ?? '';
     justify-content:center;
     overflow:hidden;
   }
-  .photo-box img{width:100%;height:100%;object-fit:cover;object-position:center 20%;}
+  .photo-box img{width:100%;height:100%;object-fit:cover;object-position:center 21%;}
   .photo-box .ph-placeholder{
     color:#9aa0ab;
     font-size:2.3mm;
