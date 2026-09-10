@@ -168,8 +168,9 @@ $displayName = $me['name'] ?? $me['username'] ?? '';
     text-align:center;
   }
   .id-name{
-    font-size:3.8mm;
-    font-weight:800;
+    font-family:'Arial Narrow', Arial, sans-serif;
+    font-size:11pt;
+    font-weight:bold;
     color:#0d1b4c;
     line-height:1.15;
     white-space:nowrap;
@@ -186,7 +187,8 @@ $displayName = $me['name'] ?? $me['username'] ?? '';
   }
   .id-designation{
     margin-top:1mm;
-    font-size:3.3mm;
+    font-family:'Arial Narrow', Arial, sans-serif;
+    font-size:10pt;
     color:#0d1b4c;
     font-weight:700;
     line-height:1.15;
@@ -382,12 +384,12 @@ function getValues(){
 }
 
 function fitNameToWidth(el){
-  const maxSize = 3.8, minSize = 2.0, step = 0.1;
+  const maxSize = 11, minSize = 6, step = 0.3;
   let size = maxSize;
-  el.style.fontSize = size + 'mm';
+  el.style.fontSize = size + 'pt';
   while(el.scrollWidth > el.clientWidth + 0.5 && size > minSize){
     size -= step;
-    el.style.fontSize = size + 'mm';
+    el.style.fontSize = size + 'pt';
   }
 }
 

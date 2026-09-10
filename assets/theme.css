@@ -132,10 +132,10 @@ button:focus-visible{outline:2px solid var(--navy-2);outline-offset:2px;}
 button:disabled{opacity:.5;cursor:not-allowed;}
 .btn-primary{background:var(--navy);color:#fff;}
 .btn-primary:hover:not(:disabled){background:var(--navy-2);}
-.btn-secondary{background:var(--gray-soft);color:#333;}
+.btn-secondary{background:var(--gray-soft);color:var(--text);}
 .btn-secondary:hover:not(:disabled){background:var(--gray-soft-2);}
 .btn-danger{background:var(--red-soft);color:var(--red);}
-.btn-danger:hover:not(:disabled){background:#fbdada;}
+.btn-danger:hover:not(:disabled){background:var(--red-border);}
 .btn-small{padding:7px 8px;font-size:12px;border-radius:var(--radius-sm);}
 
 /* ---------- Form controls ---------- */
