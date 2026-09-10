@@ -79,7 +79,7 @@ $displayName = $me['name'] ?? $me['username'] ?? '';
   .btnbar{display:flex;gap:10px;margin-top:6px;}
   .btnbar button{flex:1;}
   .note{
-    font-size:11.5px;
+    font-size:13.5px;
     color:var(--gray);
     margin-top:14px;
     line-height:1.5;
@@ -306,7 +306,7 @@ $displayName = $me['name'] ?? $me['username'] ?? '';
     </div>
     <div class="btnbar">
       <button class="btn-secondary" id="saveRecordBtn" onclick="saveRecord()">Save to records</button>
-      <button class="btn-secondary" onclick="resetForm()">Reset</button>
+      <button class="btn-danger" onclick="resetForm()">Reset</button>
     </div>
 
     <p class="note">

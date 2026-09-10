@@ -9,6 +9,10 @@
   --red-border:#f3c1c3;
   --blue:#1c5fa8;
   --blue-soft:#e8f3ff;
+  --blue-border:#c7e0f7;
+  --green:#1a7d3a;
+  --green-soft:#e8f7ec;
+  --green-border:#b8e0c4;
   --gray:#5a5f6e;
   --gray-soft:#eef0f4;
   --gray-soft-2:#e2e5eb;
@@ -36,6 +40,10 @@
   --red-border:#5c2c2f;
   --blue:#6ba3e0;
   --blue-soft:#152a42;
+  --blue-border:#2c4a6b;
+  --green:#6fcf87;
+  --green-soft:#1c3a26;
+  --green-border:#2d5c3c;
   --gray:#9aa0ab;
   --gray-soft:#242938;
   --gray-soft-2:#2f3546;
@@ -136,6 +144,10 @@ button:disabled{opacity:.5;cursor:not-allowed;}
 .btn-secondary:hover:not(:disabled){background:var(--gray-soft-2);}
 .btn-danger{background:var(--red-soft);color:var(--red);}
 .btn-danger:hover:not(:disabled){background:var(--red-border);}
+.btn-success{background:var(--green-soft);color:var(--green);}
+.btn-success:hover:not(:disabled){background:var(--green-border);}
+.btn-info{background:var(--blue-soft);color:var(--blue);}
+.btn-info:hover:not(:disabled){background:var(--blue-border);}
 .btn-small{padding:7px 8px;font-size:12px;border-radius:var(--radius-sm);}
 
 /* ---------- Form controls ---------- */
