@@ -143,7 +143,7 @@ $displayName = $me['name'] ?? $me['username'] ?? '';
   /* 35mm x 45mm passport-photo ratio (7:9), sized to the card's front artwork */
   .photo-box{
     position:absolute;
-    left:26%;
+    left:27.2%;
     top:29%;
     width:45.6%;
     height:37%;
@@ -153,7 +153,7 @@ $displayName = $me['name'] ?? $me['username'] ?? '';
     justify-content:center;
     overflow:hidden;
   }
-  .photo-box img{width:100%;height:100%;object-fit:cover;}
+  .photo-box img{width:100%;height:100%;object-fit:cover;object-position:center 20%;}
   .photo-box .ph-placeholder{
     color:#9aa0ab;
     font-size:2.3mm;
@@ -302,10 +302,10 @@ $displayName = $me['name'] ?? $me['username'] ?? '';
 
     <div class="btnbar">
       <button class="btn-primary" onclick="printCard()">Print card</button>
-      <button class="btn-secondary" id="savePdfBtn" onclick="savePDF()">Save as PDF</button>
+      <button class="btn-info" id="savePdfBtn" onclick="savePDF()">Save as PDF</button>
     </div>
     <div class="btnbar">
-      <button class="btn-secondary" id="saveRecordBtn" onclick="saveRecord()">Save to records</button>
+      <button class="btn-info" id="saveRecordBtn" onclick="saveRecord()">Save to records</button>
       <button class="btn-danger" onclick="resetForm()">Reset</button>
     </div>
 
