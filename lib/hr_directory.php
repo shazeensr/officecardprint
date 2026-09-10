@@ -86,9 +86,18 @@ function parse_hr_directory_result(string $html, string $rc): ?array
 
         [, $rcn, $name, $post] = $cells;
         if ($rcn === $rc) {
-            return ['rc' => $rcn, 'name' => $name, 'designation' => $post];
+            return ['rc' => $rcn, 'name' => strip_honorific($name), 'designation' => $post];
         }
     }
 
     return null;
+}
+
+/**
+ * Strips a leading honorific (Mr., Mrs., Ms., Miss, Dr., etc.) from a name
+ * as returned by the HR directory, e.g. "Mr. Ahmed Shazeen" -> "Ahmed Shazeen".
+ */
+function strip_honorific(string $name): string
+{
+    return preg_replace('/^(mr|mrs|ms|miss|mx|dr)\.?\s+/i', '', trim($name));
 }
