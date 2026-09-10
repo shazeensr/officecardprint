@@ -86,7 +86,11 @@ function parse_hr_directory_result(string $html, string $rc): ?array
 
         [, $rcn, $name, $post] = $cells;
         if ($rcn === $rc) {
-            return ['rc' => $rcn, 'name' => strip_honorific($name), 'designation' => $post];
+            return [
+                'rc' => $rcn,
+                'name' => strip_honorific($name),
+                'designation' => strip_grade_suffix($post),
+            ];
         }
     }
 
@@ -100,4 +104,14 @@ function parse_hr_directory_result(string $html, string $rc): ?array
 function strip_honorific(string $name): string
 {
     return preg_replace('/^(mr|mrs|ms|miss|mx|dr)\.?\s+/i', '', trim($name));
+}
+
+/**
+ * Strips a trailing grade code from a designation as returned by the HR
+ * directory, e.g. "Deputy Immigration Officer 4 (2)" -> "Deputy Immigration
+ * Officer". Grade codes are always a run of digits/parentheses at the end.
+ */
+function strip_grade_suffix(string $designation): string
+{
+    return trim(preg_replace('/\s+[\d()]+(?:\s+[\d()]+)*\s*$/', '', trim($designation)));
 }
