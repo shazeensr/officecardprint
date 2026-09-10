@@ -172,7 +172,7 @@ $displayName = $me['name'] ?? $me['username'] ?? '';
     font-size:11pt;
     font-weight:bold;
     color:#0d1b4c;
-    line-height:1;
+    line-height:1.2;
     white-space:nowrap;
     overflow:hidden;
     text-transform:uppercase;
