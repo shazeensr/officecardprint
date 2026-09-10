@@ -181,7 +181,7 @@ $displayName = $me['name'] ?? $me['username'] ?? '';
     margin-top:1.6mm;
     font-size:10pt;
     color:#0d1b4c;
-    font-weight:600;
+    font-weight:500;
     line-height:1;
     text-transform:uppercase;
   }
@@ -190,7 +190,7 @@ $displayName = $me['name'] ?? $me['username'] ?? '';
     font-family:'Arial Narrow', Arial, sans-serif;
     font-size:10pt;
     color:#0d1b4c;
-    font-weight:600;
+    font-weight:500;
     line-height:1;
     text-transform:uppercase;
   }
