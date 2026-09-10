@@ -143,7 +143,7 @@ $displayName = $me['name'] ?? $me['username'] ?? '';
   /* 35mm x 45mm passport-photo ratio (7:9), sized to the card's front artwork */
   .photo-box{
     position:absolute;
-    left:27.2%;
+    left:26%;
     top:29%;
     width:45.6%;
     height:37%;
@@ -172,17 +172,17 @@ $displayName = $me['name'] ?? $me['username'] ?? '';
     font-size:11pt;
     font-weight:bold;
     color:#0d1b4c;
-    line-height:1.15;
+    line-height:1;
     white-space:nowrap;
     overflow:hidden;
     text-transform:uppercase;
   }
   .id-rc{
     margin-top:1.6mm;
-    font-size:3.3mm;
+    font-size:10pt;
     color:#0d1b4c;
-    font-weight:700;
-    line-height:1.15;
+    font-weight:600;
+    line-height:1;
     text-transform:uppercase;
   }
   .id-designation{
@@ -190,8 +190,9 @@ $displayName = $me['name'] ?? $me['username'] ?? '';
     font-family:'Arial Narrow', Arial, sans-serif;
     font-size:10pt;
     color:#0d1b4c;
-    font-weight:700;
-    line-height:1.15;
+    font-weight:600;
+    line-height:1;
+    text-transform:uppercase;
   }
 
   /* ---------- PRINT ---------- */
@@ -535,8 +536,16 @@ async function dbAdd(record){
   return new Promise((resolve,reject)=>{
     const tx = db.transaction(DB_STORE,'readwrite');
     const req = tx.objectStore(DB_STORE).add(record);
-    req.onsuccess = ()=>resolve(req.result);
+    let insertedId;
+    req.onsuccess = ()=>{ insertedId = req.result; };
     req.onerror = ()=>reject(req.error);
+    // Wait for the transaction to fully commit (not just the request to
+    // succeed) before resolving — printCard() calls the blocking native
+    // print dialog right after this, which can otherwise interrupt the
+    // commit before it lands, silently dropping the save.
+    tx.oncomplete = ()=>resolve(insertedId);
+    tx.onerror = ()=>reject(tx.error);
+    tx.onabort = ()=>reject(tx.error);
   });
 }
 
