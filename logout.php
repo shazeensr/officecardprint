@@ -1,5 +1,5 @@
 <?php
-require __DIR__ . '/lib/session.php';
+require_once __DIR__ . '/lib/session.php';
 
 start_secure_session();
 $_SESSION = [];

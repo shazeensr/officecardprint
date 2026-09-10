@@ -1,9 +1,9 @@
 <?php
-require __DIR__ . '/lib/session.php';
-require __DIR__ . '/lib/env.php';
-require __DIR__ . '/lib/ldap_auth.php';
-require __DIR__ . '/lib/roles.php';
-require __DIR__ . '/lib/users.php';
+require_once __DIR__ . '/lib/session.php';
+require_once __DIR__ . '/lib/env.php';
+require_once __DIR__ . '/lib/ldap_auth.php';
+require_once __DIR__ . '/lib/roles.php';
+require_once __DIR__ . '/lib/users.php';
 
 load_env(__DIR__ . '/.env');
 start_secure_session();
