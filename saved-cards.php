@@ -207,7 +207,7 @@ function applySavedFilter(){
         <div class="saved-actions">
           <a class="btn-secondary btn-small" href="index.php?load=${r.id}">Load</a>
           <a class="btn-secondary btn-small" href="index.php?print=${r.id}">Print</a>
-          ${window.APP_ROLE === 'viewer' ? '' : `<button class="btn-secondary btn-small btn-danger" onclick="deleteRecord(${r.id})">Delete</button>`}
+          ${window.APP_ROLE === 'admin' ? `<button class="btn-secondary btn-small btn-danger" onclick="deleteRecord(${r.id})">Delete</button>` : ''}
         </div>
       </div>
     `;

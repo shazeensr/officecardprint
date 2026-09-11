@@ -72,9 +72,9 @@ try {
             exit;
         }
 
-        if ($role === 'viewer') {
+        if ($role !== 'admin') {
             http_response_code(403);
-            echo json_encode(['error' => 'View-only access — cannot delete records.']);
+            echo json_encode(['error' => 'Only admins can delete saved cards.']);
             exit;
         }
 
