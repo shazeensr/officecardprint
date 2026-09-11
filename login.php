@@ -42,8 +42,11 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         }
 
         if ($user) {
+            $isFirstLogin = false;
             try {
-                $user['role'] = get_local_role($user['username']) ?? resolve_role($user['username']);
+                $existingRole = get_local_role($user['username']);
+                $isFirstLogin = ($existingRole === null);
+                $user['role'] = $existingRole ?? resolve_role($user['username']);
                 sync_local_user($user);
             } catch (PDOException $e) {
                 error_log('Local user sync failed: ' . $e->getMessage());
@@ -52,6 +55,14 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 
             $_SESSION['user'] = $user;
             unset($_SESSION['login_attempts'], $_SESSION['login_locked_until']);
+
+            // First-time logins that land on the default (unassigned) role
+            // don't have any elevated access yet — point them at ICT once,
+            // right after this login, rather than leaving them to wonder.
+            if ($isFirstLogin && $user['role'] === DEFAULT_ROLE) {
+                $_SESSION['flash'] = 'Successfully logged in. For more roles, please contact ICT.';
+            }
+
             session_regenerate_id(true);
             header('Location: index.php');
             exit;

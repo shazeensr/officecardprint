@@ -203,6 +203,28 @@ input:disabled{
   padding:9px 10px;
   border-radius:var(--radius-sm);
 }
+.alert-success{
+  background:var(--green-soft);
+  border:1px solid var(--green-border);
+  color:var(--green);
+  font-size:12.5px;
+  padding:9px 10px;
+  border-radius:var(--radius-sm);
+  display:flex;
+  align-items:center;
+  justify-content:space-between;
+  gap:12px;
+}
+.alert-success .alert-close{
+  background:none;
+  border:none;
+  color:inherit;
+  font-size:16px;
+  line-height:1;
+  padding:0;
+  cursor:pointer;
+  flex:none;
+}
 
 /* ---------- Theme toggle ---------- */
 .theme-toggle{

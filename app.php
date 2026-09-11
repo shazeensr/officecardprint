@@ -5,6 +5,9 @@ require_login();
 $me = current_user();
 $role = $me['role'] ?? 'viewer';
 $displayName = $me['name'] ?? $me['username'] ?? '';
+
+$flash = $_SESSION['flash'] ?? null;
+unset($_SESSION['flash']);
 ?>
 <!DOCTYPE html>
 <html lang="en">
@@ -21,6 +24,7 @@ $displayName = $me['name'] ?? $me['username'] ?? '';
     grid-template-columns:480px 1fr;
     min-height:calc(100vh - 53px);
   }
+  .flash-banner{margin:14px 24px 0;}
   /* ---------- FORM PANEL ---------- */
   .panel{
     background:var(--panel);
@@ -270,6 +274,13 @@ $displayName = $me['name'] ?? $me['username'] ?? '';
     <button id="themeToggle" class="theme-toggle" type="button" onclick="toggleTheme()" aria-label="Toggle dark mode"></button>
   </div>
 </div>
+
+<?php if ($flash): ?>
+  <div class="alert-success flash-banner">
+    <span><?= htmlspecialchars($flash, ENT_QUOTES) ?></span>
+    <button type="button" class="alert-close" onclick="this.closest('.flash-banner').remove()" aria-label="Dismiss">&times;</button>
+  </div>
+<?php endif; ?>
 
 <div class="app">
   <!-- ===================== FORM PANEL ===================== -->
