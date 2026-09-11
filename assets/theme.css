@@ -159,7 +159,7 @@ select{
   padding:9px 10px;
   border:1px solid var(--border);
   border-radius:var(--radius-sm);
-  background:#fff;
+  background:var(--upload-bg);
   color:var(--text);
 }
 input[type=text]:focus,
