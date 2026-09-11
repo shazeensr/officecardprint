@@ -169,12 +169,13 @@ select:focus{
   outline-offset:0;
   border-color:var(--navy-2);
 }
-/* Chrome/Edge force a white background on autofilled fields (login form,
-   most often) via an internal style the normal `background` rule above
-   can't override — this is the standard workaround. */
-:root[data-theme="dark"] input:-webkit-autofill,
-:root[data-theme="dark"] input:-webkit-autofill:hover,
-:root[data-theme="dark"] input:-webkit-autofill:focus{
+/* Chrome/Edge force their own background+text color on autofilled fields
+   (login form, most often) via an internal style the normal `background`/
+   `color` rules above can't override — this is the standard workaround.
+   Applies in both themes; --text/--upload-bg already resolve per theme. */
+input:-webkit-autofill,
+input:-webkit-autofill:hover,
+input:-webkit-autofill:focus{
   -webkit-text-fill-color:var(--text);
   -webkit-box-shadow:0 0 0 1000px var(--upload-bg) inset;
   box-shadow:0 0 0 1000px var(--upload-bg) inset;
