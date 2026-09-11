@@ -20,6 +20,11 @@ function require_csrf(): bool
     return hash_equals($_SESSION['csrf_token'], $token);
 }
 
+function is_valid_image_data_url(string $value): bool
+{
+    return (bool) preg_match('/^data:image\/(png|jpe?g|webp|gif);base64,[A-Za-z0-9+\/]+={0,2}$/', $value);
+}
+
 try {
     if ($method === 'GET') {
         $id = isset($_GET['id']) ? (int) $_GET['id'] : null;
@@ -56,6 +61,21 @@ try {
         if (!is_array($input) || empty($input['frontSnapshot'])) {
             http_response_code(400);
             echo json_encode(['error' => 'Missing card data.']);
+            exit;
+        }
+
+        // frontSnapshot/photoDataUrl end up in an unescaped src="..." on the
+        // client (saved-cards.php's list, and app.php's photo preview), so
+        // anything other than a genuine image data URI here is a stored-XSS
+        // payload waiting to fire in every other logged-in user's browser.
+        if (!is_valid_image_data_url($input['frontSnapshot'])) {
+            http_response_code(400);
+            echo json_encode(['error' => 'Invalid card snapshot.']);
+            exit;
+        }
+        if (!empty($input['photoDataUrl']) && !is_valid_image_data_url($input['photoDataUrl'])) {
+            http_response_code(400);
+            echo json_encode(['error' => 'Invalid photo data.']);
             exit;
         }
 

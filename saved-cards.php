@@ -200,7 +200,7 @@ function applySavedFilter(){
     const meta = [r.rcNumber, r.designation].filter(Boolean).join(' · ');
     return `
       <div class="saved-item">
-        <img class="saved-thumb" src="${r.frontSnapshot}" alt="">
+        <img class="saved-thumb" src="${escapeHtml(r.frontSnapshot)}" alt="">
         <div class="saved-name">${escapeHtml(r.fullName || '(no name)')}</div>
         <div class="saved-meta">${escapeHtml(meta)}</div>
         <div class="saved-date">Printed by: ${escapeHtml(r.createdByName || 'Unknown')}<br>Printed date: ${new Date(r.createdAt).toLocaleString()}</div>

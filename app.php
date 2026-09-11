@@ -493,10 +493,19 @@ function buildCard(templateId, container, values){
 
   const photoSlot = container.querySelector('[data-slot="photo"]');
   if(photoSlot){
+    photoSlot.innerHTML = '';
     if(photoDataUrl){
-      photoSlot.innerHTML = '<img src="'+photoDataUrl+'">';
+      // Built via DOM APIs, not innerHTML string concatenation — photoDataUrl
+      // can come from a saved record loaded off the server, and setting
+      // .src never gets parsed as HTML the way innerHTML would.
+      const img = document.createElement('img');
+      img.src = photoDataUrl;
+      photoSlot.appendChild(img);
     } else {
-      photoSlot.innerHTML = '<div class="ph-placeholder">Photo</div>';
+      const placeholder = document.createElement('div');
+      placeholder.className = 'ph-placeholder';
+      placeholder.textContent = 'Photo';
+      photoSlot.appendChild(placeholder);
     }
   }
 
