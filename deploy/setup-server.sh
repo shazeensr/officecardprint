@@ -101,9 +101,18 @@ find "$APP_DIR" -type d -exec chmod 750 {} \;
 find "$APP_DIR" -type f -exec chmod 640 {} \;
 
 echo "==> Configuring Apache"
+a2enmod headers >/dev/null
 cp "$APP_DIR/deploy/apache-officecardprint.conf" "/etc/apache2/sites-available/${SITE_NAME}.conf"
 a2ensite "${SITE_NAME}.conf" >/dev/null
 a2dissite 000-default.conf >/dev/null 2>&1 || true
+
+# Stop leaking the exact Apache/OS version in the Server header and on
+# error pages — reduces fingerprinting for known-CVE targeting.
+sed -i \
+  -e 's/^ServerTokens .*/ServerTokens Prod/' \
+  -e 's/^ServerSignature .*/ServerSignature Off/' \
+  /etc/apache2/conf-available/security.conf
+
 apache2ctl configtest
 systemctl reload apache2
 
