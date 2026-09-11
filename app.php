@@ -8,6 +8,10 @@ $displayName = $me['name'] ?? $me['username'] ?? '';
 
 $flash = $_SESSION['flash'] ?? null;
 unset($_SESSION['flash']);
+
+if (empty($_SESSION['csrf_token'])) {
+    $_SESSION['csrf_token'] = bin2hex(random_bytes(32));
+}
 ?>
 <!DOCTYPE html>
 <html lang="en">
@@ -251,7 +255,10 @@ unset($_SESSION['flash']);
 </style>
 </head>
 <body>
-<script>window.APP_ROLE = <?= json_encode($role) ?>;</script>
+<script>
+window.APP_ROLE = <?= json_encode($role) ?>;
+window.CSRF_TOKEN = <?= json_encode($_SESSION['csrf_token']) ?>;
+</script>
 
 <div class="topbar">
   <div class="topbar-brand">
@@ -590,53 +597,28 @@ function resetForm(){
   render();
 }
 
-/* ===================== SAVED CARDS (IndexedDB) =====================
-   Stores the entered fields plus a rendered snapshot of the front card,
-   so a past card can be reprinted later without re-entering anything. */
-const DB_NAME = 'officeCardDB';
-const DB_STORE = 'cards';
-
-function openCardDB(){
-  return new Promise((resolve,reject)=>{
-    const req = indexedDB.open(DB_NAME, 1);
-    req.onupgradeneeded = ()=>{
-      const db = req.result;
-      if(!db.objectStoreNames.contains(DB_STORE)){
-        const store = db.createObjectStore(DB_STORE, { keyPath:'id', autoIncrement:true });
-        store.createIndex('createdAt','createdAt',{unique:false});
-      }
-    };
-    req.onsuccess = ()=>resolve(req.result);
-    req.onerror = ()=>reject(req.error);
-  });
+/* ===================== SAVED CARDS (server-side) =====================
+   Stored in the shared database via saved-cards-api.php so every
+   computer/user sees the same list — this used to live in browser-local
+   IndexedDB, which meant cards saved on one machine were invisible
+   everywhere else. */
+async function apiGetSavedCard(id){
+  const res = await fetch('saved-cards-api.php?id=' + encodeURIComponent(id));
+  if(!res.ok) return null;
+  return res.json();
 }
 
-async function dbAdd(record){
-  const db = await openCardDB();
-  return new Promise((resolve,reject)=>{
-    const tx = db.transaction(DB_STORE,'readwrite');
-    const req = tx.objectStore(DB_STORE).add(record);
-    let insertedId;
-    req.onsuccess = ()=>{ insertedId = req.result; };
-    req.onerror = ()=>reject(req.error);
-    // Wait for the transaction to fully commit (not just the request to
-    // succeed) before resolving — printCard() calls the blocking native
-    // print dialog right after this, which can otherwise interrupt the
-    // commit before it lands, silently dropping the save.
-    tx.oncomplete = ()=>resolve(insertedId);
-    tx.onerror = ()=>reject(tx.error);
-    tx.onabort = ()=>reject(tx.error);
+async function apiAddSavedCard(record){
+  const res = await fetch('saved-cards-api.php', {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json', 'X-CSRF-Token': window.CSRF_TOKEN },
+    body: JSON.stringify(record)
   });
-}
-
-async function dbGet(id){
-  const db = await openCardDB();
-  return new Promise((resolve,reject)=>{
-    const tx = db.transaction(DB_STORE,'readonly');
-    const req = tx.objectStore(DB_STORE).get(id);
-    req.onsuccess = ()=>resolve(req.result);
-    req.onerror = ()=>reject(req.error);
-  });
+  const data = await res.json();
+  if(!res.ok){
+    throw new Error(data.error || 'Could not save record.');
+  }
+  return data;
 }
 
 async function renderFrontSnapshot(values){
@@ -660,13 +642,12 @@ async function persistRecord(values){
     return false;
   }
   const snapshot = await renderFrontSnapshot(values);
-  await dbAdd({
+  await apiAddSavedCard({
     fullName: values.fullName,
     rcNumber: values.rcNumber,
     designation: values.designation,
     photoDataUrl: photoDataUrl,
-    frontSnapshot: snapshot,
-    createdAt: Date.now()
+    frontSnapshot: snapshot
   });
   return true;
 }
@@ -695,7 +676,7 @@ async function saveRecord(){
 }
 
 async function loadRecord(id){
-  const r = await dbGet(id);
+  const r = await apiGetSavedCard(id);
   if(!r) return;
   document.getElementById('fullName').value = r.fullName || '';
   document.getElementById('rcNumber').value = r.rcNumber || '';
@@ -706,7 +687,7 @@ async function loadRecord(id){
 }
 
 async function reprintRecord(id){
-  const r = await dbGet(id);
+  const r = await apiGetSavedCard(id);
   if(!r) return;
 
   const printArea = document.getElementById('printArea');

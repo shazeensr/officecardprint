@@ -5,6 +5,10 @@ require_login();
 $me = current_user();
 $role = $me['role'] ?? 'viewer';
 $displayName = $me['name'] ?? $me['username'] ?? '';
+
+if (empty($_SESSION['csrf_token'])) {
+    $_SESSION['csrf_token'] = bin2hex(random_bytes(32));
+}
 ?>
 <!DOCTYPE html>
 <html lang="en">
@@ -89,7 +93,10 @@ $displayName = $me['name'] ?? $me['username'] ?? '';
 </style>
 </head>
 <body>
-<script>window.APP_ROLE = <?= json_encode($role) ?>;</script>
+<script>
+window.APP_ROLE = <?= json_encode($role) ?>;
+window.CSRF_TOKEN = <?= json_encode($_SESSION['csrf_token']) ?>;
+</script>
 
 <div class="topbar">
   <div class="topbar-brand">
@@ -127,42 +134,22 @@ $displayName = $me['name'] ?? $me['username'] ?? '';
 </div>
 
 <script>
-const DB_NAME = 'officeCardDB';
-const DB_STORE = 'cards';
-
-function openCardDB(){
-  return new Promise((resolve,reject)=>{
-    const req = indexedDB.open(DB_NAME, 1);
-    req.onupgradeneeded = ()=>{
-      const db = req.result;
-      if(!db.objectStoreNames.contains(DB_STORE)){
-        const store = db.createObjectStore(DB_STORE, { keyPath:'id', autoIncrement:true });
-        store.createIndex('createdAt','createdAt',{unique:false});
-      }
-    };
-    req.onsuccess = ()=>resolve(req.result);
-    req.onerror = ()=>reject(req.error);
-  });
+async function apiGetAllSavedCards(){
+  const res = await fetch('saved-cards-api.php');
+  if(!res.ok) throw new Error('Could not load saved cards.');
+  return res.json();
 }
 
-async function dbGetAll(){
-  const db = await openCardDB();
-  return new Promise((resolve,reject)=>{
-    const tx = db.transaction(DB_STORE,'readonly');
-    const req = tx.objectStore(DB_STORE).getAll();
-    req.onsuccess = ()=>resolve(req.result);
-    req.onerror = ()=>reject(req.error);
+async function apiDeleteSavedCard(id){
+  const res = await fetch('saved-cards-api.php?id=' + encodeURIComponent(id), {
+    method: 'DELETE',
+    headers: { 'X-CSRF-Token': window.CSRF_TOKEN }
   });
-}
-
-async function dbDelete(id){
-  const db = await openCardDB();
-  return new Promise((resolve,reject)=>{
-    const tx = db.transaction(DB_STORE,'readwrite');
-    const req = tx.objectStore(DB_STORE).delete(id);
-    req.onsuccess = ()=>resolve();
-    req.onerror = ()=>reject(req.error);
-  });
+  const data = await res.json();
+  if(!res.ok){
+    throw new Error(data.error || 'Could not delete record.');
+  }
+  return data;
 }
 
 function escapeHtml(s){
@@ -174,7 +161,7 @@ let allRecords = [];
 async function refreshSavedList(){
   const list = document.getElementById('savedList');
   try{
-    allRecords = await dbGetAll();
+    allRecords = await apiGetAllSavedCards();
   } catch(err){
     console.error(err);
     allRecords = [];
@@ -229,8 +216,12 @@ function applySavedFilter(){
 
 async function deleteRecord(id){
   if(!confirm('Delete this saved card? This cannot be undone.')) return;
-  await dbDelete(id);
-  await refreshSavedList();
+  try{
+    await apiDeleteSavedCard(id);
+    await refreshSavedList();
+  } catch(err){
+    alert(err.message);
+  }
 }
 
 refreshSavedList();
