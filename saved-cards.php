@@ -203,7 +203,7 @@ function applySavedFilter(){
         <img class="saved-thumb" src="${r.frontSnapshot}" alt="">
         <div class="saved-name">${escapeHtml(r.fullName || '(no name)')}</div>
         <div class="saved-meta">${escapeHtml(meta)}</div>
-        <div class="saved-date">${new Date(r.createdAt).toLocaleString()}</div>
+        <div class="saved-date">Saved by ${escapeHtml(r.createdByName || 'Unknown')} on ${new Date(r.createdAt).toLocaleString()}</div>
         <div class="saved-actions">
           <a class="btn-secondary btn-small" href="index.php?load=${r.id}">Load</a>
           <a class="btn-secondary btn-small" href="index.php?print=${r.id}">Print</a>

@@ -30,7 +30,12 @@ function add_saved_card(array $record, string $createdBy): array
  */
 function get_saved_card(int $id): ?array
 {
-    $stmt = db()->prepare('SELECT * FROM saved_cards WHERE id = :id');
+    $stmt = db()->prepare(
+        'SELECT sc.*, u.name AS created_by_name
+         FROM saved_cards sc
+         LEFT JOIN users u ON u.username COLLATE utf8mb4_unicode_ci = sc.created_by
+         WHERE sc.id = :id'
+    );
     $stmt->execute(['id' => $id]);
     $row = $stmt->fetch();
 
@@ -41,13 +46,16 @@ function get_saved_card(int $id): ?array
  * All saved cards, newest first, without the (large) photo_data_url column —
  * the list view only needs the snapshot thumbnail.
  *
- * @return array<int, array{id:int,fullName:string,rcNumber:string,designation:string,frontSnapshot:string,createdAt:int}>
+ * @return array<int, array{id:int,fullName:string,rcNumber:string,designation:string,frontSnapshot:string,createdAt:int,createdByName:string}>
  */
 function all_saved_cards(): array
 {
     $rows = db()->query(
-        'SELECT id, full_name, rc_number, designation, front_snapshot, created_by, created_at
-         FROM saved_cards ORDER BY created_at DESC'
+        'SELECT sc.id, sc.full_name, sc.rc_number, sc.designation, sc.front_snapshot,
+                sc.created_by, sc.created_at, u.name AS created_by_name
+         FROM saved_cards sc
+         LEFT JOIN users u ON u.username COLLATE utf8mb4_unicode_ci = sc.created_by
+         ORDER BY sc.created_at DESC'
     )->fetchAll();
 
     return array_map(fn ($row) => map_saved_card_row($row), $rows);
@@ -68,6 +76,7 @@ function map_saved_card_row(array $row): array
         'designation' => $row['designation'],
         'frontSnapshot' => $row['front_snapshot'],
         'createdBy' => $row['created_by'],
+        'createdByName' => $row['created_by_name'] ?? $row['created_by'],
         'createdAt' => strtotime($row['created_at']) * 1000, // ms, to match the old IndexedDB record shape
     ];
 
