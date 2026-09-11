@@ -77,7 +77,7 @@ if (empty($_SESSION['csrf_token'])) {
     white-space:nowrap;
     text-transform:uppercase;
   }
-  .saved-date{font-size:11px;color:var(--muted);}
+  .saved-date{font-size:11px;color:var(--muted);line-height:1.5;}
   .saved-actions{display:flex;gap:6px;margin-top:4px;}
   .saved-actions .btn-small{
     flex:1;
@@ -203,7 +203,7 @@ function applySavedFilter(){
         <img class="saved-thumb" src="${r.frontSnapshot}" alt="">
         <div class="saved-name">${escapeHtml(r.fullName || '(no name)')}</div>
         <div class="saved-meta">${escapeHtml(meta)}</div>
-        <div class="saved-date">Saved by ${escapeHtml(r.createdByName || 'Unknown')} on ${new Date(r.createdAt).toLocaleString()}</div>
+        <div class="saved-date">Printed by: ${escapeHtml(r.createdByName || 'Unknown')}<br>Printed date: ${new Date(r.createdAt).toLocaleString()}</div>
         <div class="saved-actions">
           <a class="btn-secondary btn-small" href="index.php?load=${r.id}">Load</a>
           <a class="btn-secondary btn-small" href="index.php?print=${r.id}">Print</a>
