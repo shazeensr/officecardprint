@@ -25,6 +25,8 @@ DB_USER="officecardprint"
 DB_PASS="$(openssl rand -base64 32 | tr -dc 'A-Za-z0-9' | head -c 32)"
 SITE_NAME="officecardprint"
 DEPLOY_KEY="/root/.ssh/officecardprint_deploy"
+CERT_HOSTNAME="ocp.immigration.local"
+CERT_IP="$(hostname -I | awk '{print $1}')"
 
 if [[ $EUID -ne 0 ]]; then
   echo "Run as root: sudo $0" >&2
@@ -100,8 +102,40 @@ chown -R www-data:www-data "$APP_DIR"
 find "$APP_DIR" -type d -exec chmod 750 {} \;
 find "$APP_DIR" -type f -exec chmod 640 {} \;
 
+echo "==> Generating self-signed TLS certificate"
+# No public domain to get a Let's Encrypt cert for (internal IP only), so
+# this is self-signed — browsers will show a one-time trust warning, but
+# traffic is still fully encrypted. Covers both the internal hostname and
+# the server's own IP via SAN. Swap in a CA-issued cert later without
+# touching the vhost — just replace these two files.
+if [[ ! -f /etc/ssl/certs/officecardprint.crt ]]; then
+  mkdir -p /etc/ssl/officecardprint
+  cat > /etc/ssl/officecardprint/san.cnf <<EOF
+[req]
+distinguished_name = dn
+x509_extensions = v3_req
+prompt = no
+[dn]
+CN = ${CERT_HOSTNAME}
+O = Office Card Print
+[v3_req]
+subjectAltName = @alt_names
+[alt_names]
+DNS.1 = ${CERT_HOSTNAME}
+IP.1 = ${CERT_IP}
+EOF
+  openssl req -x509 -nodes -newkey rsa:2048 \
+    -keyout /etc/ssl/private/officecardprint.key \
+    -out /etc/ssl/certs/officecardprint.crt \
+    -days 730 \
+    -config /etc/ssl/officecardprint/san.cnf
+  chmod 600 /etc/ssl/private/officecardprint.key
+else
+  echo "   Certificate already exists, leaving it alone."
+fi
+
 echo "==> Configuring Apache"
-a2enmod headers >/dev/null
+a2enmod headers rewrite ssl >/dev/null
 cp "$APP_DIR/deploy/apache-officecardprint.conf" "/etc/apache2/sites-available/${SITE_NAME}.conf"
 a2ensite "${SITE_NAME}.conf" >/dev/null
 a2dissite 000-default.conf >/dev/null 2>&1 || true
@@ -126,5 +160,8 @@ systemctl reload apache2
 echo
 echo "==> Done."
 echo "DB user '${DB_USER}' password: ${DB_PASS}  (already saved in $APP_DIR/.env)"
+echo "Site is now served over HTTPS (self-signed cert) at https://${CERT_HOSTNAME}/"
+echo "or https://${CERT_IP}/ — browsers will warn once since it's not CA-signed;"
+echo "plain http:// now redirects here automatically."
 echo "Next: edit $APP_DIR/.env with your LDAP settings, then:"
 echo "  systemctl reload apache2"
