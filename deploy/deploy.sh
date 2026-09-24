@@ -7,16 +7,17 @@ DEPLOY_KEY="/root/.ssh/officecardprint_deploy"
 export GIT_SSH_COMMAND="ssh -i ${DEPLOY_KEY} -o IdentitiesOnly=yes"
 
 cd "$APP_DIR"
-# The permission lockdown below strips the executable bit off this script
-# (and setup-server.sh) every run, which makes the *next* git pull fail on
-# a mode-only conflict. Discard that before pulling.
-git checkout -- deploy/*.sh 2>/dev/null || true
+# Modes are managed by the lockdown below, not git — ignore mode-only diffs so
+# a pull can never fail on them.
+git config core.fileMode false
 git pull
 
 chown -R www-data:www-data "$APP_DIR"
 find "$APP_DIR" -type d -exec chmod 750 {} \;
-find "$APP_DIR" -type f -exec chmod 640 {} \;
-chmod 750 deploy/*.sh
+# deploy/*.sh are run directly (sudo .../deploy.sh), so they must never lose
+# their executable bit — exclude them from the 640 lockdown.
+find "$APP_DIR" -type f ! -path "$APP_DIR/deploy/*.sh" -exec chmod 640 {} \;
+chmod 750 "$APP_DIR"/deploy/*.sh
 
 # Re-apply schema in case it changed; CREATE TABLE IF NOT EXISTS is a no-op otherwise.
 mysql -u root "$(grep '^DB_DATABASE=' .env | cut -d= -f2)" < "$APP_DIR/deploy/schema.sql"
