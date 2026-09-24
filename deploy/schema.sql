@@ -29,3 +29,20 @@ CREATE TABLE IF NOT EXISTS saved_cards (
   KEY saved_cards_rc_number (rc_number),
   KEY saved_cards_full_name (full_name)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+
+-- Audit log for saved cards: one row per save / print / reprint of a card.
+-- saved_cards holds ONE record per RC number (latest details + snapshot);
+-- this is its history. performed_by is the RC/username of whoever did it,
+-- full_name/designation are what the card said at that moment.
+CREATE TABLE IF NOT EXISTS card_print_log (
+  id INT UNSIGNED NOT NULL AUTO_INCREMENT,
+  card_id INT UNSIGNED NOT NULL,
+  action ENUM('saved','printed','reprinted') NOT NULL,
+  performed_by VARCHAR(64) NOT NULL,
+  full_name VARCHAR(191) NOT NULL DEFAULT '',
+  designation VARCHAR(191) NOT NULL DEFAULT '',
+  performed_at DATETIME NOT NULL,
+  PRIMARY KEY (id),
+  KEY card_print_log_card (card_id, performed_at),
+  CONSTRAINT card_print_log_card_fk FOREIGN KEY (card_id) REFERENCES saved_cards (id) ON DELETE CASCADE
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;

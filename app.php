@@ -525,7 +525,7 @@ async function printCard(){
   // Viewers can't create records (the server rejects it), so don't try.
   if(window.APP_ROLE !== 'viewer'){
     try{
-      await persistRecord(values);
+      await persistRecord(values, 'printed');
     } catch(err){
       // Never block printing on a failed save — but say so instead of failing
       // silently, otherwise nobody notices the card is missing from Saved Cards.
@@ -636,6 +636,19 @@ async function apiAddSavedCard(record){
   return data;
 }
 
+async function apiLogCardEvent(id, event){
+  const res = await fetch('saved-cards-api.php?id=' + encodeURIComponent(id) + '&event=' + encodeURIComponent(event), {
+    method: 'POST',
+    headers: { 'X-CSRF-Token': window.CSRF_TOKEN }
+  });
+  let data = null;
+  try{ data = await res.json(); } catch(e){ /* not JSON — e.g. bounced to the login page */ }
+  if(!res.ok || !data){
+    throw new Error((data && data.error) || 'unexpected response from the server — your session may have expired, reload the page and sign in again');
+  }
+  return data;
+}
+
 function showSaveWarning(message){
   const old = document.getElementById('saveWarning');
   if(old) old.remove();
@@ -675,7 +688,7 @@ async function renderFrontSnapshot(values){
 /* Shared save logic used both by the explicit "Save to records" button
    and automatically whenever a card is printed. Returns false (without
    throwing) when there's nothing worth saving — an all-blank form. */
-async function persistRecord(values){
+async function persistRecord(values, action){
   if(!values.fullName.trim() && !values.rcNumber.trim()){
     return false;
   }
@@ -685,7 +698,8 @@ async function persistRecord(values){
     rcNumber: values.rcNumber,
     designation: values.designation,
     photoDataUrl: photoDataUrl,
-    frontSnapshot: snapshot
+    frontSnapshot: snapshot,
+    action: action
   });
   return true;
 }
@@ -703,7 +717,7 @@ async function saveRecord(){
   btn.textContent = 'Saving…';
 
   try{
-    await persistRecord(values);
+    await persistRecord(values, 'saved');
   } catch(err){
     console.error(err);
     alert('Could not save record: ' + err.message);
@@ -727,6 +741,15 @@ async function loadRecord(id){
 async function reprintRecord(id){
   const r = await apiGetSavedCard(id);
   if(!r) return;
+
+  // Every print — including a reprint from Saved Cards — goes in the card's
+  // history. Never block the print on it, but don't fail silently either.
+  try{
+    await apiLogCardEvent(id, 'reprinted');
+  } catch(err){
+    console.error('Could not log reprint:', err);
+    showSaveWarning('The card is printing, but this reprint could not be recorded in its history (' + err.message + ').');
+  }
 
   const printArea = document.getElementById('printArea');
   printArea.innerHTML = '';

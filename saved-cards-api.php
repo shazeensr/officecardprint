@@ -34,6 +34,11 @@ try {
 
         $id = isset($_GET['id']) ? (int) $_GET['id'] : null;
 
+        if ($id !== null && isset($_GET['history'])) {
+            echo json_encode(get_card_history($id));
+            exit;
+        }
+
         if ($id !== null) {
             $record = get_saved_card($id);
             if ($record === null) {
@@ -53,6 +58,24 @@ try {
         if (!require_csrf()) {
             http_response_code(403);
             echo json_encode(['error' => 'Your session expired. Please reload the page.']);
+            exit;
+        }
+
+        // A reprint of an existing card is an audit event, not a new record, so
+        // every role — viewers included — can (and should) have it logged.
+        if (isset($_GET['event'])) {
+            $id = isset($_GET['id']) ? (int) $_GET['id'] : 0;
+            if ($_GET['event'] !== 'reprinted' || $id <= 0) {
+                http_response_code(400);
+                echo json_encode(['error' => 'Invalid event.']);
+                exit;
+            }
+            if (!log_card_event($id, 'reprinted', $me['username'])) {
+                http_response_code(404);
+                echo json_encode(['error' => 'Not found.']);
+                exit;
+            }
+            echo json_encode(['logged' => true]);
             exit;
         }
 
@@ -84,7 +107,9 @@ try {
             exit;
         }
 
-        $record = add_saved_card($input, $me['username']);
+        $action = ($input['action'] ?? 'saved') === 'printed' ? 'printed' : 'saved';
+
+        $record = save_card_with_event($input, $action, $me['username']);
         http_response_code(201);
         echo json_encode($record);
         exit;

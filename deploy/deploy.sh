@@ -22,5 +22,9 @@ chmod 750 "$APP_DIR"/deploy/*.sh
 # Re-apply schema in case it changed; CREATE TABLE IF NOT EXISTS is a no-op otherwise.
 mysql -u root "$(grep '^DB_DATABASE=' .env | cut -d= -f2)" < "$APP_DIR/deploy/schema.sql"
 
+# Fold pre-existing per-print rows into one card per RC number + audit log.
+# Idempotent — a no-op once everything has been migrated.
+php "$APP_DIR/deploy/migrate.php"
+
 systemctl reload apache2
 echo "Deployed $(git rev-parse --short HEAD)"
