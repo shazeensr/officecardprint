@@ -4,6 +4,7 @@ require_once __DIR__ . '/lib/env.php';
 require_once __DIR__ . '/lib/ldap_auth.php';
 require_once __DIR__ . '/lib/roles.php';
 require_once __DIR__ . '/lib/users.php';
+require_once __DIR__ . '/lib/login_throttle.php';
 
 load_env(__DIR__ . '/.env');
 start_secure_session();
@@ -18,30 +19,32 @@ if (empty($_SESSION['csrf_token'])) {
 }
 
 $error = null;
-$maxAttempts = 5;
-$lockoutSeconds = 60;
 
 if ($_SERVER['REQUEST_METHOD'] === 'POST') {
-    $attempts = $_SESSION['login_attempts'] ?? 0;
-    $lockedUntil = $_SESSION['login_locked_until'] ?? 0;
-
-    if (time() < $lockedUntil) {
-        $error = 'Too many failed attempts. Try again in a moment.';
-    } elseif (!hash_equals($_SESSION['csrf_token'], $_POST['csrf_token'] ?? '')) {
+    if (!hash_equals($_SESSION['csrf_token'], $_POST['csrf_token'] ?? '')) {
         $error = 'Your session expired. Please try again.';
     } else {
         $username = trim($_POST['username'] ?? '');
         $password = (string) ($_POST['password'] ?? '');
+        $clientIp = $_SERVER['REMOTE_ADDR'] ?? '';
 
-        try {
-            $user = authenticate_ldap($username, $password);
-        } catch (LdapAuthException $e) {
-            error_log('LDAP auth error: ' . $e->getMessage());
-            $user = null;
-            $error = 'Login is temporarily unavailable. Please try again shortly.';
+        // Throttled by RC number and by IP in the database — not in the
+        // session, which anyone can reset just by dropping their cookie.
+        $user = null;
+        if (login_is_throttled($username, $clientIp)) {
+            $error = 'Too many failed attempts. Please wait a few minutes and try again.';
+        } else {
+            try {
+                $user = authenticate_ldap($username, $password);
+            } catch (LdapAuthException $e) {
+                error_log('LDAP auth error: ' . $e->getMessage());
+                $error = 'Login is temporarily unavailable. Please try again shortly.';
+            }
         }
 
         if ($user) {
+            clear_failed_logins($username);
+
             $isFirstLogin = false;
             try {
                 $existingRole = get_local_role($user['username']);
@@ -54,7 +57,6 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             }
 
             $_SESSION['user'] = $user;
-            unset($_SESSION['login_attempts'], $_SESSION['login_locked_until']);
 
             // First-time logins that land on the default (unassigned) role
             // don't have any elevated access yet — point them at ICT once,
@@ -69,15 +71,11 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         }
 
         if ($error === null) {
-            $attempts++;
-            $_SESSION['login_attempts'] = $attempts;
-            if ($attempts >= $maxAttempts) {
-                $_SESSION['login_locked_until'] = time() + $lockoutSeconds;
-                $_SESSION['login_attempts'] = 0;
-                $error = 'Too many failed attempts. Try again in a moment.';
-            } else {
-                $error = 'Invalid RC number, password, or you are not authorized to use this system.';
-            }
+            // Genuine bad credentials (not a throttle or an LDAP outage) —
+            // count it. Same message for wrong password / unknown user /
+            // not in the group, so it doesn't reveal which RC numbers exist.
+            record_failed_login($username, $clientIp);
+            $error = 'Invalid RC number, password, or you are not authorized to use this system.';
         }
     }
 }

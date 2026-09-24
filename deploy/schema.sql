@@ -46,3 +46,18 @@ CREATE TABLE IF NOT EXISTS card_print_log (
   KEY card_print_log_card (card_id, performed_at),
   CONSTRAINT card_print_log_card_fk FOREIGN KEY (card_id) REFERENCES saved_cards (id) ON DELETE CASCADE
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+
+-- Failed sign-in attempts, used to throttle password guessing by RC number
+-- and by client IP (the old lockout lived in the visitor's session, so
+-- discarding the cookie bypassed it). Only failures are stored, and each IP
+-- stops adding rows once throttled, so the table stays small.
+CREATE TABLE IF NOT EXISTS login_attempts (
+  id INT UNSIGNED NOT NULL AUTO_INCREMENT,
+  ip VARCHAR(45) NOT NULL,
+  username VARCHAR(64) NOT NULL,
+  attempted_at DATETIME NOT NULL,
+  PRIMARY KEY (id),
+  KEY login_attempts_user_time (username, attempted_at),
+  KEY login_attempts_ip_time (ip, attempted_at),
+  KEY login_attempts_time (attempted_at)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;

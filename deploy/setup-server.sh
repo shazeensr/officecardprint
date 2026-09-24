@@ -147,12 +147,10 @@ sed -i \
   -e 's/^ServerSignature .*/ServerSignature Off/' \
   /etc/apache2/conf-available/security.conf
 
-# Reject client-supplied session IDs PHP never generated itself —
-# defense-in-depth against session fixation.
-PHP_INI="/etc/php/$(php -r 'echo PHP_MAJOR_VERSION.".".PHP_MINOR_VERSION;')/apache2/php.ini"
-if [[ -f "$PHP_INI" ]]; then
-  sed -i 's/^session\.use_strict_mode = 0/session.use_strict_mode = 1/' "$PHP_INI"
-fi
+# PHP hardening (no shell functions, no URL fopen, no uploads, strict/secure
+# session cookies) — a conf.d drop-in, so it survives PHP package upgrades.
+PHP_VER="$(php -r 'echo PHP_MAJOR_VERSION.".".PHP_MINOR_VERSION;')"
+install -m 644 "$APP_DIR/deploy/php-hardening.ini" "/etc/php/${PHP_VER}/apache2/conf.d/99-officecardprint.ini"
 
 apache2ctl configtest
 systemctl reload apache2
