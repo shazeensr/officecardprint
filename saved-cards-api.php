@@ -27,6 +27,11 @@ function is_valid_image_data_url(string $value): bool
 
 try {
     if ($method === 'GET') {
+        if (isset($_GET['summary'])) {
+            echo json_encode(saved_cards_summary());
+            exit;
+        }
+
         $id = isset($_GET['id']) ? (int) $_GET['id'] : null;
 
         if ($id !== null) {

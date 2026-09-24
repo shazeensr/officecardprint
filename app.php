@@ -522,11 +522,16 @@ function render(){
 async function printCard(){
   const values = getValues();
 
-  try{
-    await persistRecord(values);
-  } catch(err){
-    // Don't block printing if saving the record fails — just log it.
-    console.error('Could not save record before printing:', err);
+  // Viewers can't create records (the server rejects it), so don't try.
+  if(window.APP_ROLE !== 'viewer'){
+    try{
+      await persistRecord(values);
+    } catch(err){
+      // Never block printing on a failed save — but say so instead of failing
+      // silently, otherwise nobody notices the card is missing from Saved Cards.
+      console.error('Could not save record before printing:', err);
+      showSaveWarning('The card is printing, but it could not be saved to Saved Cards (' + err.message + '). Use "Save to records" to try again.');
+    }
   }
 
   const printArea = document.getElementById('printArea');
@@ -623,11 +628,35 @@ async function apiAddSavedCard(record){
     headers: { 'Content-Type': 'application/json', 'X-CSRF-Token': window.CSRF_TOKEN },
     body: JSON.stringify(record)
   });
-  const data = await res.json();
-  if(!res.ok){
-    throw new Error(data.error || 'Could not save record.');
+  let data = null;
+  try{ data = await res.json(); } catch(e){ /* not JSON — e.g. bounced to the login page */ }
+  if(!res.ok || !data){
+    throw new Error((data && data.error) || 'unexpected response from the server — your session may have expired, reload the page and sign in again');
   }
   return data;
+}
+
+function showSaveWarning(message){
+  const old = document.getElementById('saveWarning');
+  if(old) old.remove();
+
+  const banner = document.createElement('div');
+  banner.id = 'saveWarning';
+  banner.className = 'alert-error flash-banner';
+
+  const text = document.createElement('span');
+  text.textContent = message;
+
+  const close = document.createElement('button');
+  close.type = 'button';
+  close.className = 'alert-close';
+  close.setAttribute('aria-label', 'Dismiss');
+  close.textContent = '\u00d7';
+  close.addEventListener('click', ()=> banner.remove());
+
+  banner.append(text, close);
+  document.querySelector('.app').before(banner);
+  banner.scrollIntoView({ block:'nearest' });
 }
 
 async function renderFrontSnapshot(values){

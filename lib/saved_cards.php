@@ -61,6 +61,19 @@ function all_saved_cards(): array
     return array_map(fn ($row) => map_saved_card_row($row), $rows);
 }
 
+/**
+ * Tiny fingerprint of the table (row count + newest id) so clients can poll
+ * for changes without downloading every snapshot image.
+ *
+ * @return array{count:int,latestId:int}
+ */
+function saved_cards_summary(): array
+{
+    $row = db()->query('SELECT COUNT(*) AS c, COALESCE(MAX(id), 0) AS m FROM saved_cards')->fetch();
+
+    return ['count' => (int) $row['c'], 'latestId' => (int) $row['m']];
+}
+
 function delete_saved_card(int $id): void
 {
     $stmt = db()->prepare('DELETE FROM saved_cards WHERE id = :id');

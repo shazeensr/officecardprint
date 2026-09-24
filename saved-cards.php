@@ -140,6 +140,12 @@ async function apiGetAllSavedCards(){
   return res.json();
 }
 
+async function apiGetSavedCardsSummary(){
+  const res = await fetch('saved-cards-api.php?summary=1');
+  if(!res.ok) throw new Error('summary failed');
+  return res.json();
+}
+
 async function apiDeleteSavedCard(id){
   const res = await fetch('saved-cards-api.php?id=' + encodeURIComponent(id), {
     method: 'DELETE',
@@ -157,20 +163,47 @@ function escapeHtml(s){
 }
 
 let allRecords = [];
+let lastFingerprint = null;
+let refreshing = false;
+
+function fingerprint(count, latestId){
+  return count + ':' + latestId;
+}
 
 async function refreshSavedList(){
   const list = document.getElementById('savedList');
+  refreshing = true;
   try{
     allRecords = await apiGetAllSavedCards();
+    lastFingerprint = fingerprint(allRecords.length, allRecords.reduce((m,r)=>Math.max(m,r.id),0));
   } catch(err){
     console.error(err);
     allRecords = [];
     list.innerHTML = '<div class="saved-empty">Could not load saved cards.</div>';
+    refreshing = false;
     return;
   }
+  refreshing = false;
   allRecords.sort((a,b)=> b.createdAt - a.createdAt);
   applySavedFilter();
 }
+
+/* Cards saved from other computers show up without a manual reload: poll a
+   tiny count/newest-id fingerprint and only re-download the (image-heavy)
+   list when it actually changed. Paused while the tab is hidden. */
+async function checkForChanges(){
+  if(refreshing || document.hidden || lastFingerprint === null) return;
+  try{
+    const s = await apiGetSavedCardsSummary();
+    if(fingerprint(s.count, s.latestId) !== lastFingerprint){
+      await refreshSavedList();
+    }
+  } catch(err){
+    // transient network/session hiccup — try again on the next tick
+  }
+}
+setInterval(checkForChanges, 15000);
+document.addEventListener('visibilitychange', checkForChanges);
 
 function applySavedFilter(){
   const list = document.getElementById('savedList');
