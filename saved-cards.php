@@ -34,53 +34,46 @@ if (empty($_SESSION['csrf_token'])) {
   .saved-count{font-size:12px;color:var(--gray);white-space:nowrap;margin-bottom:14px;}
   .saved-empty{font-size:13px;color:var(--gray);padding:32px;text-align:center;}
   .saved-list{
-    display:grid;
-    grid-template-columns:repeat(auto-fill,minmax(200px,1fr));
-    gap:16px;
-  }
-  .saved-item{
     background:var(--panel);
     border:1px solid var(--border);
-    border-radius:10px;
-    padding:10px;
-    display:flex;
-    flex-direction:column;
-    gap:8px;
-    transition:box-shadow .15s ease, border-color .15s ease;
+    border-radius:var(--radius-lg);
+    overflow-x:auto;
   }
-  .saved-item:hover{
-    box-shadow:var(--shadow-md);
-    border-color:var(--navy-2);
+  .saved-table{width:100%;border-collapse:collapse;font-size:13px;}
+  .saved-table th,
+  .saved-table td{
+    text-align:left;
+    padding:10px 14px;
+    border-bottom:1px solid var(--border);
+    vertical-align:middle;
   }
+  .saved-table th{
+    background:var(--paper);
+    font-size:11px;
+    text-transform:uppercase;
+    letter-spacing:.05em;
+    color:var(--gray);
+    font-weight:600;
+    white-space:nowrap;
+  }
+  .saved-table tbody tr:hover{background:var(--row-hover);}
+  .saved-table tbody tr:last-child td{border-bottom:none;}
   .saved-thumb{
-    width:100%;
+    display:block;
+    width:44px;
     aspect-ratio:53.98/85.6;
     object-fit:cover;
-    border-radius:6px;
+    border-radius:4px;
     border:1px solid var(--border);
     background:var(--gray-soft);
   }
-  .saved-name{
-    font-size:13px;
-    font-weight:700;
-    color:var(--text);
-    overflow:hidden;
-    text-overflow:ellipsis;
-    white-space:nowrap;
-    text-transform:uppercase;
-  }
-  .saved-meta{
-    font-size:12px;
-    color:var(--gray);
-    overflow:hidden;
-    text-overflow:ellipsis;
-    white-space:nowrap;
-    text-transform:uppercase;
-  }
-  .saved-date{font-size:11px;color:var(--muted);line-height:1.5;}
-  .saved-actions{display:flex;gap:6px;margin-top:4px;}
+  .saved-name{font-weight:700;color:var(--text);text-transform:uppercase;}
+  .saved-upper{text-transform:uppercase;}
+  .saved-muted{color:var(--gray);}
+  .saved-date{color:var(--gray);font-size:12px;white-space:nowrap;}
+  .saved-by{white-space:nowrap;}
+  .saved-actions{display:flex;gap:6px;white-space:nowrap;}
   .saved-actions .btn-small{
-    flex:1;
     display:inline-flex;
     align-items:center;
     justify-content:center;
@@ -229,22 +222,40 @@ function applySavedFilter(){
     return;
   }
 
-  list.innerHTML = records.map(r=>{
-    const meta = [r.rcNumber, r.designation].filter(Boolean).join(' · ');
-    return `
-      <div class="saved-item">
-        <img class="saved-thumb" src="${escapeHtml(r.frontSnapshot)}" alt="">
-        <div class="saved-name">${escapeHtml(r.fullName || '(no name)')}</div>
-        <div class="saved-meta">${escapeHtml(meta)}</div>
-        <div class="saved-date">Printed by: ${escapeHtml(r.createdByName || 'Unknown')}<br>Printed date: ${new Date(r.createdAt).toLocaleString()}</div>
+  const rows = records.map(r=>`
+    <tr>
+      <td><img class="saved-thumb" src="${escapeHtml(r.frontSnapshot)}" alt=""></td>
+      <td class="saved-name">${escapeHtml(r.fullName || '(no name)')}</td>
+      <td class="saved-upper">${escapeHtml(r.rcNumber || '—')}</td>
+      <td class="saved-upper saved-muted">${escapeHtml(r.designation || '—')}</td>
+      <td class="saved-by">${escapeHtml(r.createdByName || 'Unknown')}</td>
+      <td class="saved-date">${new Date(r.createdAt).toLocaleString()}</td>
+      <td>
         <div class="saved-actions">
           <a class="btn-secondary btn-small" href="index.php?load=${r.id}">Load</a>
           <a class="btn-secondary btn-small" href="index.php?print=${r.id}">Print</a>
           ${window.APP_ROLE === 'admin' ? `<button class="btn-secondary btn-small btn-danger" onclick="deleteRecord(${r.id})">Delete</button>` : ''}
         </div>
-      </div>
-    `;
-  }).join('');
+      </td>
+    </tr>
+  `).join('');
+
+  list.innerHTML = `
+    <table class="saved-table">
+      <thead>
+        <tr>
+          <th>Card</th>
+          <th>Name</th>
+          <th>RC number</th>
+          <th>Designation</th>
+          <th>Printed by</th>
+          <th>Printed date</th>
+          <th>Actions</th>
+        </tr>
+      </thead>
+      <tbody>${rows}</tbody>
+    </table>
+  `;
 }
 
 async function deleteRecord(id){
